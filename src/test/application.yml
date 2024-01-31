@@ -1,0 +1,18 @@
+spring:
+# datasource:
+# url: jdbc:h2:mem:testdb
+# username: sa
+# password:
+# driver-class-name: org.h2.Driver
+# jpa:
+# hibernate:
+# ddl-auto: create
+# properties:
+# hibernate:
+# show_sql: true
+# format_sql: true
+# open-in-view: false
+logging.level:
+  org.hibernate.SQL: debug
+# org.hibernate.type: trace
+# spring boot는 별다른 설정이 없으면 메모리로 돌려버린다. 그래서 다 주석처리해도 된다.
