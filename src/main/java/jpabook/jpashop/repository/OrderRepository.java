@@ -106,5 +106,35 @@ public class OrderRepository {
         ).getResultList();
     }
 
+    public List<Order> findAllWithMemberDelivery(int offset, int limit) {
+        return em.createQuery(
+                "select o from Order  o" +
+                        " join fetch o.member m" +
+                        " join fetch o.delivery d", Order.class)
+                .setFirstResult(offset)
+                .setMaxResults(limit)
+                .getResultList();
+    }
 
+    // distinct가 없으면 order - orderItems가 일대 다이기 때문에 order가 중복되어서 나온다.
+    // distinct의 경우 DB에 일단 쿼리로도 나간다.
+    // 하지만 distinct는 row가 동일해야되는데 여긴 아니므로 DB 상으론 불가능하다.
+    // application에 가져와서 id가 똑같으면 구별해서 버려주므로 JPA 단에서 가능해진다.
+    // 즉 distinct는 DB에서 한번, application 단에서 한번 더 검증해준다.
+    // 문제는 fetch join을 쓰게 되면 paging을 db 상에서가 아니라 memory 단에 가져와서 처리하기 시작한다.
+    // 그럼 데이터가 많으면? 터져버린다.
+    // 왜 이렇게 하는가? DB Query에서는 데이터가 4개이다. 일대다 join을 하는 순간 order의 기준이 흩어져버린다.
+    // 우리가 원하는 결과가 안 나온다. 그래서 DB 상에서 작업이 불가능해진다.
+    // 위에서 말한 것처럼 distinct도 application 단에서 가져와서 작업도 하기 때문이다.
+    // 쓰면 큰일난다.
+    // 컬렉션 페치 조인은 딱 하나만 사용해야 한다.
+    public List<Order> findAllWithItem() {
+        return em.createQuery(
+                "select distinct o from Order o"+
+                        " join fetch o.member m" +
+                        " join fetch o.delivery d" +
+                        " join fetch o.orderItems oi" +
+                        " join fetch  oi.item i", Order.class
+                ).getResultList();
+    }
 }
